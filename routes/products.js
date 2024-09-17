@@ -7,10 +7,10 @@ const Product = require('../models/product');
 // เส้นทางสำหรับเพิ่มสินค้า
 router.post('/products', async function (req, res, next) {
     try {
-      const { name, description, price, category, stock } = req.body;
+      const { name, description, price, category, stock , imgUrl } = req.body;
   
       // ตรวจสอบว่าข้อมูลที่จำเป็นถูกส่งมา
-      if (!name || !price || !category || !stock) {
+      if (!name || !price || !category || !stock || !imgUrl ) {
         return res.status(400).send({
           message: 'Missing required fields',
           success: false,
@@ -38,6 +38,7 @@ router.post('/products', async function (req, res, next) {
           price,
           category,
           stock,
+          imgUrl,
         });
 
         // บันทึกผลิตภัณฑ์ลงในฐานข้อมูล
@@ -74,8 +75,6 @@ router.put('/products/:id', async (req, res) => {
         success: false,
       });
     }
-
-
     
     // ค้นหาสินค้าที่ต้องการอัปเดต
     const product = await Product.findByIdAndUpdate(productId, {  name, description , price , category , stock  }, { new: true }); // แก้ไขการอัปเดตข้อมูลเพียงเฉพาะ stock เท่านั้น
@@ -209,5 +208,51 @@ router.put('/products/:id', async (req, res) => {
     }
   });
   
+
+
+  // เส้นทางสำหรับลดค่า stock ของสินค้า
+router.put('/products/:id/decrement-stock', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    
+    // ค้นหาสินค้าจากฐานข้อมูลโดยใช้ ID
+    const product = await Product.findById(productId);
+
+    // ตรวจสอบว่าพบสินค้าหรือไม่
+    if (!product) {
+      return res.status(404).send({
+        message: 'Product not found',
+        success: false,
+      });
+    }
+
+    // ตรวจสอบค่า stock ว่ามากกว่า 0 หรือไม่
+    if (product.stock <= 0) {
+      return res.status(400).send({
+        message: 'Product stock is already zero',
+        success: false,
+      });
+    }
+
+    // ลดค่า stock ลง 1
+    product.stock -= 1;
+
+    // บันทึกการเปลี่ยนแปลงลงในฐานข้อมูล
+    await product.save();
+
+    // ส่งคำตอบกลับ
+    return res.status(200).send({
+      data: product,
+      message: 'Product stock decremented successfully',
+      success: true,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).send({
+      message: 'Internal server error',
+      success: false,
+    });
+  }
+});
 
 module.exports = router;

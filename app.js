@@ -9,6 +9,9 @@ var approveRouter = require('./routes/approve');                  // เส้�
 var productsRouter = require('./routes/products');                // เส้นทาง products[POST] /api/v1/products
 var ordersRouter = require('./routes/orders');                // เส้นทาง products[POST] /api/v1/products
 var loginRouter = require('./routes/login');
+var cartsRouter = require('./routes/carts');
+const cors = require('cors');
+
 
 
 
@@ -29,6 +32,7 @@ mongoose.connect(`mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`);   //เชื่
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+app.use(cors());
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -37,10 +41,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);         
-app.use('/api/v1/approve', approveRouter);                              // เส้นทาง approve [PUT] /api/v1/approve/:id
+app.use('/api/v1/approve',approveRouter);                              // เส้นทาง approve [PUT] /api/v1/approve/:id
 app.use('/api/v1', productsRouter);      
 app.use('/api/v1', ordersRouter) ;                   // เส้นทาง products[POST] /api/v1/products
 app.use('/api/v1/login', loginRouter) ;
+app.use('/carts', cartsRouter) ;
+
 
 //catch 404 and forward to error handler
 app.use(function(req, res, next) {
